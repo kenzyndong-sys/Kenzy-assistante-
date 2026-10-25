@@ -27,6 +27,17 @@ class MainActivity : Activity(), TextToSpeech.OnInitListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+val prefs = getSharedPreferences("crash", MODE_PRIVATE)
+val old = prefs.getString("log", null)
+Thread.setDefaultUncaughtExceptionHandler { _, e ->
+    prefs.edit().putString("log", android.util.Log.getStackTraceString(e)).commit()
+    android.os.Process.killProcess(android.os.Process.myPid())
+}
+if (old != null) {
+    prefs.edit().clear().commit()
+    setContentView(TextView(this).apply { text = old; textSize = 11f })
+    return
+}
         tts = TextToSpeech(this, this)
 
         status = TextView(this).apply {
